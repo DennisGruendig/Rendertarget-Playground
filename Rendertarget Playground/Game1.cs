@@ -14,6 +14,7 @@ namespace Rendertarget_Playground
 
         SpriteFont Font;
         Texture2D Texture;
+        Texture2D Projectile;
         RenderTarget2D RenderTarget;
         MouseState MouseState;
 
@@ -36,6 +37,9 @@ namespace Rendertarget_Playground
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Font = Content.Load<SpriteFont>("Font");
             Texture = Content.Load<Texture2D>("GameArea");
+
+            Projectile = new Texture2D(GraphicsDevice, 1, 1);
+            Projectile.SetData(new Color[] { Color.Orange });
         }
 
         protected override void Update(GameTime gameTime)
@@ -43,7 +47,6 @@ namespace Rendertarget_Playground
             MouseState = Mouse.GetState();
             base.Update(gameTime);
         }
-
 
         protected override void Draw(GameTime gameTime)
         {
@@ -90,19 +93,41 @@ namespace Rendertarget_Playground
             if (relativeMouseY >= targetBounds.Height)
                 relativeMouseY = targetBounds.Height;
 
+            Vector2 relativeMouse = new Vector2(relativeMouseX, relativeMouseY);
+
             Vector2 centerNormalized = new Vector2(
                 (targetBounds.Width * -0.5f + relativeMouseX) / targetBounds.Width * 2f,
                 (targetBounds.Height * -0.5f + relativeMouseY) / targetBounds.Height * 2f);
+
+            Vector2 mouseFromMiddle = relativeMouse - (targetBounds.Size.ToVector2() * 0.5f);
+
+            Vector2[] projectileLocations = new Vector2[40];
+
+            float tOffset = (float)(gameTime.TotalGameTime.TotalSeconds * 5 % 1) * (1f / projectileLocations.Length);
+            for (int i = 0; i < projectileLocations.Length; i++)
+            {
+                projectileLocations[i] = (targetBounds.Size.ToVector2() * 0.5f) + (mouseFromMiddle * (1f / projectileLocations.Length * i + tOffset));
+            }
+            float projectileSize = 5;
 
             GraphicsDevice.SetRenderTarget(RenderTarget);
 
             _spriteBatch.Begin();
             _spriteBatch.Draw(Texture, targetBounds, Color.White);
-            _spriteBatch.DrawString(Font, $"Buffer: {backBounds.Width}/{backBounds.Height} ({backAspect.ToString("0.00")} Target: {targetBounds.X}/{targetBounds.Y}/{targetBounds.Width}/{targetBounds.Height} ({targetAspect.ToString("0.00")})", new Vector2(2, 2), Color.Black);
-            _spriteBatch.DrawString(Font, $"Mouse Raw: {MouseState.X}/{MouseState.Y}", new Vector2(2, 16), Color.Black);
-            _spriteBatch.DrawString(Font, $"Mouse Offset: {mouseOffset.X.ToString("0.00")}/{mouseOffset.Y.ToString("0.00")}", new Vector2(2, 30), Color.Black);
-            _spriteBatch.DrawString(Font, $"Mouse Relative: {relativeMouseX.ToString("0000.00")}/{relativeMouseY.ToString("0000.00")}", new Vector2(2, 44), Color.Black);
-            _spriteBatch.DrawString(Font, $"Center Normalized: {centerNormalized.X.ToString("0000.00")}/{centerNormalized.Y.ToString("0000.00")}", new Vector2(2, 58), Color.Black);
+
+            for (int i = 0; i < projectileLocations.Length; i++)
+            {
+                _spriteBatch.Draw(Projectile, new Rectangle((int)(projectileLocations[i].X - projectileSize * 0.5f), (int)(projectileLocations[i].Y - projectileSize * 0.5f), (int)projectileSize, (int)projectileSize), Color.White);
+            }
+
+            int textOffset = 0; 
+            int textDistance = 18;
+            _spriteBatch.DrawString(Font, $"Buffer: {backBounds.Width}/{backBounds.Height} ({backAspect.ToString("0.00")} Target: {targetBounds.X}/{targetBounds.Y}/{targetBounds.Width}/{targetBounds.Height} ({targetAspect.ToString("0.00")})", new Vector2(2, 2 + textDistance * textOffset++), Color.Black);
+            _spriteBatch.DrawString(Font, $"Mouse Raw: {MouseState.X}/{MouseState.Y}", new Vector2(2, 2 + textDistance * textOffset++), Color.Black);
+            _spriteBatch.DrawString(Font, $"Mouse Offset: {mouseOffset.X.ToString("0.00")}/{mouseOffset.Y.ToString("0.00")}", new Vector2(2, 2 + textDistance * textOffset++), Color.Black);
+            _spriteBatch.DrawString(Font, $"Mouse Relative: {relativeMouse.X.ToString("0000.00")}/{relativeMouse.Y.ToString("0000.00")}", new Vector2(2, 2 + textDistance * textOffset++), Color.Black);
+            _spriteBatch.DrawString(Font, $"Center Normalized: {centerNormalized.X.ToString("0.00")}/{centerNormalized.Y.ToString("0.00")}", new Vector2(2, 2 + textDistance * textOffset++), Color.Black);
+            _spriteBatch.DrawString(Font, $"Mouse Relative to Middle: {mouseFromMiddle.X.ToString("0.00")}/{mouseFromMiddle.Y.ToString("0.00")}", new Vector2(2, 2 + textDistance * textOffset++), Color.Black);
             _spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);
