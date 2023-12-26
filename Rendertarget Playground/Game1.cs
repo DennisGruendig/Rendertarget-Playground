@@ -90,6 +90,10 @@ namespace Rendertarget_Playground
             if (relativeMouseY >= targetBounds.Height)
                 relativeMouseY = targetBounds.Height;
 
+            Vector2 centerNormalized = new Vector2(
+                (targetBounds.Width * -0.5f + relativeMouseX) / targetBounds.Width * 2f,
+                (targetBounds.Height * -0.5f + relativeMouseY) / targetBounds.Height * 2f);
+
             GraphicsDevice.SetRenderTarget(RenderTarget);
 
             _spriteBatch.Begin();
@@ -98,6 +102,7 @@ namespace Rendertarget_Playground
             _spriteBatch.DrawString(Font, $"Mouse Raw: {MouseState.X}/{MouseState.Y}", new Vector2(2, 16), Color.Black);
             _spriteBatch.DrawString(Font, $"Mouse Offset: {mouseOffset.X.ToString("0.00")}/{mouseOffset.Y.ToString("0.00")}", new Vector2(2, 30), Color.Black);
             _spriteBatch.DrawString(Font, $"Mouse Relative: {relativeMouseX.ToString("0000.00")}/{relativeMouseY.ToString("0000.00")}", new Vector2(2, 44), Color.Black);
+            _spriteBatch.DrawString(Font, $"Center Normalized: {centerNormalized.X.ToString("0000.00")}/{centerNormalized.Y.ToString("0000.00")}", new Vector2(2, 58), Color.Black);
             _spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);
