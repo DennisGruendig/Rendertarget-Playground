@@ -20,12 +20,15 @@ namespace Rendertarget_Playground
         Texture2D ProjectileLightBlue;
         RenderTarget2D RenderTarget;
         MouseState MouseState;
+        MouseState MouseStatePrev;
         KeyboardState KeyboardState;
+        KeyboardState KeyboardStatePrev;
         List<Vector2> ProjectileLocations = new();
 
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
+            //_graphics.PreferMultiSampling = true;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
@@ -59,7 +62,9 @@ namespace Rendertarget_Playground
 
         protected override void Update(GameTime gameTime)
         {
+            MouseStatePrev = MouseState;
             MouseState = Mouse.GetState();
+            KeyboardStatePrev = KeyboardState;
             KeyboardState = Keyboard.GetState();
             base.Update(gameTime);
         }
@@ -72,6 +77,9 @@ namespace Rendertarget_Playground
             _graphics.ApplyChanges();
 
             GraphicsDevice.Clear(Color.Magenta);
+
+            if (KeyboardState.IsKeyDown(Keys.Space) && !(KeyboardStatePrev.IsKeyDown(Keys.Space)))
+                RenderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
 
             Rectangle backBounds = GraphicsDevice.PresentationParameters.Bounds;
             Rectangle targetBounds = RenderTarget.Bounds;
@@ -130,7 +138,7 @@ namespace Rendertarget_Playground
             float angle = MathF.Atan2(normalizedMiddle.Y, normalizedMiddle.X) + MathHelper.ToRadians(180);
             int octant = (int)(Math.Round(8 * angle / (2 * MathHelper.Pi) + 8) % 8);
 
-            CompassDir dir = (CompassDir)octant;  // typecast to enum: 0 -> E etc.
+            CompassDir dir = (CompassDir)octant;  // typecast to enum: 0 -> W etc.
             string directionalMessage = string.Empty;
 
             Vector2 norm = Vector2.Zero;
